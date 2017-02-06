@@ -1,0 +1,15 @@
+// Place your settings in this file to overwrite default and user settings.
+{
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "html.suggest.angular1": false,
+  "html.suggest.ionic": false,
+
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/bower_components": true,
+    "scripts": true,
+    "aurelia_project": true,
+    "yarn.lock": true,
+    "yarn-error.log": true    
+  },
+}
