@@ -1,0 +1,3 @@
+// features
+
+* allow sorting of selected items for multi-auto-complete

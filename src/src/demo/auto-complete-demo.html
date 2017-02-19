@@ -1,0 +1,208 @@
+<template>
+    <require from="../components/auto-complete/good-auto-complete"></require>
+    <require from="../components/auto-complete/good-multi-auto-complete"></require>
+    <require from="./auto-complete-demo.css"></require>
+
+    <div slot="content">
+        <div class="jumbotron">
+            <h1>Auto-Complete samples</h1>
+            <p>This is a showcase for custom built auto-complete components, both with the possibility to select single and
+                multiple items from a dynamically provided source. It has advanced features like creating new entries on
+                the fly, custom styling and more.
+            </p>
+        </div>
+        
+        <hr></hr>
+
+        <div class="row">
+            <div class="col-xs-12">         
+                <h2>Common Features</h2>       
+                <p>The following features are shared between both the single-select and multi-select control:</p>
+                <ul>
+                    <li>Suggestions: 'Up/Down Arrows' move through suggestions.</li>
+                    <li>Suggestions: 'Pos 1' moves to first (selectable) entry.</li>
+                    <li>Suggestions: 'End' moves to last (selectable) entry.</li>
+                    <li>Suggestions: 'Page up/down' skips forwards/backwards through entries.</li>
+                    <li>Suggestions: 'Escape' hides the suggestions drop-down.</li>
+                    <li>'Escape' resets whatever current value is entered to the currently selected item's textual representation (meaning that double-escape when the suggestions list is open resets to the currently selected item).</li>
+                    <li>'Enter' selects the currently selected item. If the input box is empty, the selected item is reset to null. If the input box is not empty and no suggestion is highlighted (or the suggestions list is hidden by hitting 'escape') AND the control is configured to allow creating new values, a new entry is created and used as the selected item..</li>
+                    <li>'Tab' also works as key to select the currently highlighted item, or moves to the next control if no highlighted item is available (or if the suggestions list was forcefully closed).</li>
+                    <li>Suggestions can also be highlighted by using the mouse to point at items, the mouse wheel to scroll through the list, and the left mouse button to select the currently highlighted item. Clicking outside the control to move focus leaves the currently entered value unchanged.</li>                    
+                    <li>If the current value of the input control does not match the textural representation of the currently selected item, an additional class is added to the control that allows creating a visual hint for this situation (in the samples, the input border is set to red).</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-xs-12">         
+                <h2>Single-select control</h2>       
+                <p>The currently selected item is: ${selectedItem || "[none]"}</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <p>
+                    Here we have three auto-complete controls, all bound to the same selected value. 
+                    The first one uses the default templates, a suggestion debounce value of 250 and a minimum search value length of 2.
+                    As you can see, you can easily set the placeholder for the input box. Start typing to receive suggestions
+                    (the data source provides random strings starting with the letters a-f). Use the keyboard or mouse to scroll around 
+                    the suggestions list and pick a value. Items can also be selected in code through data binding.
+                </p>
+            </div>
+            <div class="col-md-6">
+                <good-auto-complete
+                    additional-class-input="form-control"
+                    selected-item.bind="selectedItem" 
+                    suggestions-provider.bind="getSuggestions" 
+                    suggestions-debounce="250"
+                    min-search-value-length="2"
+                    placeholder="standard">
+                </good-auto-complete>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <p>
+                    The second auto-complete uses a custom template that simply alternates the background color of the available suggestion items.
+                    It also demonstrates how the provided suggestion item for the template can be used for data binding (an asterisk is added for the 
+                    currently selected item, text is bold for the highlighted one). Both the underlying data item as well as meta information (isSelected,
+                    isHighlighted, ...) is provided as thate template's data context. Hint: You can reset the currently selected item to none 
+                    by removing all input content and hitting enter to confirm.
+                </p>
+            </div>
+            <div class="col-md-6">
+                <good-auto-complete 
+                    additional-class-input="form-control"
+                    selected-item.bind="selectedItem"
+                    suggestions-provider.bind="getSuggestions" 
+                    suggestions-debounce="250"
+                    min-search-value-length="2"
+                    placeholder="custom suggestions template">
+                    <template replace-part="suggestion-item-template">
+                        <div css="${item.index % 2 === 0 ? 'background-color: #f5f5f5;' : 'background-color: white;'}; padding: 0.1em; margin: 0.1em;">
+                            <div>
+                                <strong if.bind="item.isHighlighted">${item.index}:</strong>
+                                <span if.bind="!item.isHighlighted">${item.index}:</span>
+                                <span if.bind="item.isSelected">*</span> ${item.value} <br />
+                                <small>This item is <span if.bind="!item.isHighlighted">not </span>highlighted.</small>
+                            </div>
+                        </div>
+                    </template>
+                </good-auto-complete>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <p>
+                    This auto-complete allows creating new items on the fly. A creation callback is used for this, to give you full control over how the
+                    user's input is converted to a new item. Hit escape while the suggestions are visible to disable selection of the highlighted entry, 
+                    or type something that's not part of the suggestion list.<br />
+                    Things to also try: start typing, but do not actually select an item before e.g. tabbing away
+                    from the control. A visual hint will appear to hint to this fact, allowing to reset the value to the actual selected item. All of this
+                    of course can be visually customized either by applying styles or by replacing the provided default templates.
+                </p>
+            </div>
+            <div class="col-md-6">
+                <good-auto-complete 
+                    additional-class-input="form-control"
+                    selected-item.bind="selectedItem"
+                    suggestions-provider.bind="getSuggestions"
+                    suggestions-debounce="250"                
+                    min-search-value-length="1"
+                    item-by-value-provider.bind="getOrCreateItemByValue"
+                    placeholder="allows new items">
+                </good-auto-complete>
+            </div>
+        </div>
+
+        <hr></hr>
+
+        <div class="row">
+            <div class="col-xs-12">
+                <h2>Multi-select control</h2>
+                <p>Number of currently selected items: ${selectedItems.length}</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <p>
+                    This control allows tag-like selection of multiple items. The basic mechanics are the same as with the single-select control above.
+                    A separate panel is used to show all currently selected items, and each item provides the possibility to be removed. You have full
+                    control over whether already selected items are stripped from the suggestions list like in this example, or disabled like in the next one.
+                    This first auto-complete uses default templates and allows creation of new items on the fly.
+                </p>
+            </div>
+            <div class="col-md-6">
+                <good-multi-auto-complete 
+                    additional-class-input="form-control"
+                    selected-items.bind="selectedItems"
+                    suggestions-provider.bind="getSuggestionsForMulti"
+                    suggestions-debounce="250"
+                    min-search-value-length="1"
+                    placeholder="exclude selected + new items"
+                    item-by-value-provider.bind="getOrCreateItemByValue">
+                </good-multi-auto-complete>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <p>
+                    Here a custom suggestions template is used to apply an own visual style to disabled items. It also uses a custom template to display 
+                    the selected items to demonstrate you have control over that too. As with the suggestions items, the data context provided in the 
+                    selected items template grants access to the underlying data item so data binding can be used to visually style the used template.
+                    Also note that binding multiple controls to the same selected items list also works for the multi-select control.
+                </p>
+            </div>
+            <div class="col-md-6">
+                <good-multi-auto-complete 
+                    additional-class-input="form-control"
+                    id="with-custom-selected-item-template"
+                    selected-items.bind="selectedItems" 
+                    suggestions-provider.bind="getSuggestions" 
+                    suggestions-debounce="250"
+                    min-search-value-length="1" 
+                    disable-selected="true" 
+                    placeholder="disable selected + custom templates">
+                    <template replace-part="suggestion-item-template">
+                        <div class="gmac-suggestion-item ${item.isDisabled ? 'suggestion-item-disabled' : ''} ${item.isHighlighted && !item.isDisabled ? 'gmac-suggestion-item-highlighted' : ''}">
+                            ${item.value}
+                        </div>
+                    </template>
+                    <template replace-part="selected-item-template">
+                        <p class="custom-selected-item"><a class="gmac-selected-item-remove" mousedown.delegate="remove($index)">(Remove)</a><span>${item}</span></p>
+                    </template>
+                </good-multi-auto-complete>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">                
+                <p>
+                    In this last example, the disabled state of items is determined by a property on the items themselves. That way the 
+                    application can dynamically indicate to the control which items to disable. Of course that feature can also be used
+                    with the single-select control above, and it can be combined with the built-in disabling features: in the current
+                    example, an item is either disabled when it's already selected or when the bound &quot;isDisabled&quot; property
+                    evaluates to true.
+                </p>
+            </div>
+            <div class="col-md-6">
+                <good-multi-auto-complete 
+                    additional-class-input="form-control"
+                    selected-items.bind="selectedItems"
+                    suggestions-provider.bind="getSuggestions" 
+                    suggestions-debounce="250"
+                    min-search-value-length="1" 
+                    placeholder="custom disabled property" 
+                    disable-selected="true"
+                    is-disabled-property="isDisabled">
+                    <template replace-part="suggestion-item-template">
+                        <div class="gmac-suggestion-item ${item.isDisabled ? 'suggestion-item-disabled' : ''} ${item.isHighlighted && !item.isDisabled ? 'gmac-suggestion-item-highlighted' : ''}">
+                            ${item.value}
+                        </div>
+                    </template>
+                </good-multi-auto-complete>
+            </div>
+        </div>
+        
+        <hr></hr>
+    </div>
+</template>

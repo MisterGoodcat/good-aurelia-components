@@ -12,7 +12,7 @@
     "displayName": "TypeScript",
     "fileExtension": ".ts",
     "dtsSource": [
-      "./custom_typings/**/*.d.ts"
+      "custom_typings/**/*.ts"
     ],
     "source": "src/**/*.ts"
   },
